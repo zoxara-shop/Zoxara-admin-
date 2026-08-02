@@ -192,9 +192,18 @@
                     headers: { 'X-Master-Key': API_KEY }
                 });
                 let data = await response.json();
-                cloudProducts = data.record || [];
+                
+                // JSONbin v3 වලින් එන දත්ත සාර්ථකව Array එකක් ලෙස ලබා ගැනීම
+                if (Array.isArray(data.record)) {
+                    cloudProducts = data.record;
+                } else if (data.record && Array.isArray(data.record.record)) {
+                    cloudProducts = data.record.record;
+                } else {
+                    cloudProducts = [];
+                }
             } catch (e) {
                 console.error("Fetch error:", e);
+                cloudProducts = [];
             }
         }
 
@@ -206,7 +215,7 @@
                         'Content-Type': 'application/json',
                         'X-Master-Key': API_KEY
                     },
-                    body: JSON.stringify({ record: newProducts })
+                    body: JSON.stringify(newProducts)
                 });
                 if (res.ok) {
                     cloudProducts = newProducts;
@@ -372,12 +381,10 @@
 
         function saveSiteSettings() {
             let announceText = document.getElementById('siteAnnounce').value;
-            // නිවැරදි කර ඇත: Shop එකේ loadSettings() එක සමඟ సరిപැළපෙන පරිදි JSON object එකක් ලෙස save කිරීම
             let settings = { announce: announceText };
             localStorage.setItem('zoxara_site_settings', JSON.stringify(settings));
             alert('Site Settings Saved!');
         }
     </script>
 </body>
-          </html>
-  
+</html>
