@@ -155,8 +155,8 @@
     </div>
 
     <script>
-        const BIN_ID = "6a6e4aa0f5f4af5e29df04ca";
-        const API_KEY = "$2a$10$ABIpFvmpyDQgEYEVLsfB0OuOHN/XlDvO1p5sETK3GcEMyBWXwp";
+        const BIN_ID = "6a6f1327da38895dfeaf29ff";
+        const API_KEY = "$2a$10$zigECDZrlUS6mqw0FxAIrOGb5MGmxPkU/ml0.kgX/dTlyHeqvRBv2";
         let cloudProducts = [];
 
         function handleLogin(event) {
@@ -192,8 +192,6 @@
                     headers: { 'X-Master-Key': API_KEY }
                 });
                 let data = await response.json();
-                
-                // JSONbin v3 වලින් එන දත්ත සාර්ථකව Array එකක් ලෙස ලබා ගැනීම
                 if (Array.isArray(data.record)) {
                     cloudProducts = data.record;
                 } else if (data.record && Array.isArray(data.record.record)) {
