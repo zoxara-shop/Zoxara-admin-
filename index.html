@@ -146,15 +146,38 @@
         <!-- Site Design -->
         <div class="box hidden" id="designTab">
             <button class="back-home" onclick="goHome()">← Back to Home</button>
-            <h2>Site Design & Tools</h2>
+            <h2>Site Design & Banners</h2>
+            
             <label>Announcement Bar Text</label>
             <input type="text" id="siteAnnounce" placeholder="Ex: 🎁 3% OFF Special Offer">
 
-            <button type="button" onclick="saveSiteSettings()">Save Site Settings</button>
+            <h3 style="font-size: 14px; margin-top: 15px; margin-bottom: 5px; color: #fff;">Pin Products to Slider Banners (Up to 5)</h3>
+            <p style="font-size: 10px; color: #888; margin-bottom: 10px;">Select products from your inventory to display them automatically on up to 5 banner slides.</p>
+
+            <!-- Banner 1 Select -->
+            <label>Pin Product for Banner 1</label>
+            <select id="banner1Select"><option value="">-- Select Product --</option></select>
+
+            <!-- Banner 2 Select -->
+            <label style="margin-top: 10px;">Pin Product for Banner 2</label>
+            <select id="banner2Select"><option value="">-- Select Product --</option></select>
+
+            <!-- Banner 3 Select -->
+            <label style="margin-top: 10px;">Pin Product for Banner 3</label>
+            <select id="banner3Select"><option value="">-- Select Product --</option></select>
+
+            <!-- Banner 4 Select -->
+            <label style="margin-top: 10px;">Pin Product for Banner 4</label>
+            <select id="banner4Select"><option value="">-- Select Product --</option></select>
+
+            <!-- Banner 5 Select -->
+            <label style="margin-top: 10px;">Pin Product for Banner 5</label>
+            <select id="banner5Select"><option value="">-- Select Product --</option></select>
+
+            <button type="button" onclick="saveSiteSettings()" style="margin-top: 20px;">Save Pinned Banners</button>
         </div>
     </div>
-
-    <script>
+        <script>
         const BIN_ID = "6a6f1327da38895dfeaf29ff";
         const API_KEY = "$2a$10$zigECDZrlUS6mqw0FxAIrOGb5MGmxPkU/ml0.kgX/dTlyHeqvRBv2";
         let cloudProducts = [];
@@ -167,7 +190,9 @@
             if (u.toLowerCase() === "pasindu chamod munasinha" && p === "20080620Sl") {
                 document.getElementById('loginBox').classList.add('hidden');
                 document.getElementById('homePage').classList.remove('hidden');
-                fetchCloudData();
+                fetchCloudData().then(() => {
+                    loadExistingSettings();
+                });
             } else {
                 document.getElementById('errorMsg').innerText = "Incorrect Name or Password!";
             }
@@ -178,6 +203,7 @@
             document.getElementById(sectionId).classList.remove('hidden');
             if(sectionId === 'deleteTab') loadDeleteList();
             if(sectionId === 'editTab') { cancelEditSelection(); loadEditList(); }
+            if(sectionId === 'designTab') { fetchCloudData().then(() => populateBannerDropdowns()); }
         }
 
         function goHome() {
@@ -377,11 +403,54 @@
             loadEditList();
         }
 
+        function populateBannerDropdowns(savedBanners = []) {
+            for (let i = 1; i <= 5; i++) {
+                let select = document.getElementById(`banner${i}Select`);
+                let currentSelected = savedBanners[i - 1] ? savedBanners[i - 1].title : "";
+                
+                let optionsHtml = '<option value="">-- Select Product --</option>';
+                cloudProducts.forEach((prod, idx) => {
+                    let isSelected = (prod.title === currentSelected) ? 'selected' : '';
+                    optionsHtml += `<option value="${idx}" ${isSelected}>${prod.title}</option>`;
+                });
+                select.innerHTML = optionsHtml;
+            }
+        }
+
+        function loadExistingSettings() {
+            let settings = JSON.parse(localStorage.getItem('zoxara_site_settings')) || {};
+            if (settings.announce) {
+                document.getElementById('siteAnnounce').value = settings.announce;
+            }
+            if (settings.banners && Array.isArray(settings.banners)) {
+                populateBannerDropdowns(settings.banners);
+            } else {
+                populateBannerDropdowns([]);
+            }
+        }
+
         function saveSiteSettings() {
             let announceText = document.getElementById('siteAnnounce').value;
-            let settings = { announce: announceText };
+            let banners = [];
+            
+            for(let i = 1; i <= 5; i++) {
+                let select = document.getElementById(`banner${i}Select`);
+                let selectedIndex = select.value;
+                if(selectedIndex !== "") {
+                    let prod = cloudProducts[selectedIndex];
+                    if(prod) {
+                        banners.push({ 
+                            image: prod.image, 
+                            title: prod.title, 
+                            link: prod.link 
+                        });
+                    }
+                }
+            }
+
+            let settings = { announce: announceText, banners: banners };
             localStorage.setItem('zoxara_site_settings', JSON.stringify(settings));
-            alert('Site Settings Saved!');
+            alert('Pinned Banners Saved Successfully (Up to 5) !');
         }
     </script>
 </body>
