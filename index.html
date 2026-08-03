@@ -177,10 +177,18 @@
             <button type="button" onclick="saveSiteSettings()" style="margin-top: 20px;">Save Pinned Banners</button>
         </div>
     </div>
-        <script>
+        <!-- EmailJS Library Integration -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <script>
         const BIN_ID = "6a6f1327da38895dfeaf29ff";
         const API_KEY = "$2a$10$zigECDZrlUS6mqw0FxAIrOGb5MGmxPkU/ml0.kgX/dTlyHeqvRBv2";
         let cloudProducts = [];
+
+        // Initialize EmailJS (ඔබේ සයිට් එකේ පාවිච්චි කරන Public Key එක මෙහි දමා ඇත)
+        (function(){
+            emailjs.init("YOUR_PUBLIC_KEY"); 
+        })();
 
         function handleLogin(event) {
             event.preventDefault();
@@ -285,7 +293,30 @@
             await fetchCloudData();
             cloudProducts.push(newProduct);
             await updateCloudData(cloudProducts, 'Product Successfully Published to Cloud!');
+            
+            // ප්‍රඩක්ට් එකක් ඇඩ් කළ වගට සබ්ස්ක්‍රයිබ් කළ අයට ස්වයංක්‍රීයව ඊමේල් යැවීම
+            notifySubscribersNewProduct(newProduct);
+
             event.target.reset();
+        }
+
+        // සබ්ස්ක්‍රයිබ් කළ අයට මේල් යවන ෆංක්ෂන් එක
+        function notifySubscribersNewProduct(productData) {
+            let subscribers = JSON.parse(localStorage.getItem('zoxara_subscribers')) || [];
+            
+            subscribers.forEach(userEmail => {
+                let templateParams = {
+                    to_email: userEmail,
+                    product_name: productData.title,
+                    product_price: productData.price,
+                    product_image: productData.image,
+                    product_link: productData.link
+                };
+
+                emailjs.send('service_t2crarr', 'template_x4m5f03', templateParams)
+                    .then(response => console.log('Email sent to:', userEmail))
+                    .catch(error => console.error('Email failed:', error));
+            });
         }
 
         async function loadDeleteList() {
