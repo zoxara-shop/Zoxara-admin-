@@ -29,6 +29,9 @@
         .product-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
         .delete-btn { background: #ff4757; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; width: auto; margin-top: 0; }
         .edit-btn { background: #3498db; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; width: auto; margin-top: 0; }
+        
+        .stat-card { background: #2c2c2e; padding: 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+        .stat-value { font-weight: bold; color: #4cd137; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -70,6 +73,11 @@
                 <div class="card-btn" onclick="openSection('designTab')">
                     <span class="card-icon">🎨</span>
                     <span class="card-title">Site Design</span>
+                </div>
+                <!-- අලුතින් එකතු කළ Analytics කොටුව -->
+                <div class="card-btn" onclick="openSection('analyticsTab')" style="grid-column: span 2;">
+                    <span class="card-icon">📊</span>
+                    <span class="card-title">Visitor Analytics & Stats</span>
                 </div>
             </div>
         </div>
@@ -154,41 +162,50 @@
             <h3 style="font-size: 14px; margin-top: 15px; margin-bottom: 5px; color: #fff;">Pin Products to Slider Banners (Up to 5)</h3>
             <p style="font-size: 10px; color: #888; margin-bottom: 10px;">Select products from your inventory to display them automatically on up to 5 banner slides.</p>
 
-            <!-- Banner 1 Select -->
             <label>Pin Product for Banner 1</label>
             <select id="banner1Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 2 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 2</label>
             <select id="banner2Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 3 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 3</label>
             <select id="banner3Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 4 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 4</label>
             <select id="banner4Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 5 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 5</label>
             <select id="banner5Select"><option value="">-- Select Product --</option></select>
 
             <button type="button" onclick="saveSiteSettings()" style="margin-top: 20px;">Save Pinned Banners</button>
         </div>
-    </div>
-        <!-- EmailJS Library Integration -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
-    <script>
+        <!-- Analytics Tab (අලුතින් එකතු කළ කොටස) -->
+        <div class="box hidden" id="analyticsTab">
+            <button class="back-home" onclick="goHome()">← Back to Home</button>
+            <h2>Visitor Analytics & Stats</h2>
+            <p style="font-size: 10px; color: #888; text-align: center; margin-bottom: 15px;">Real-time tracking of shop visitors and clicks.</p>
+            
+            <div class="stat-card">
+                <span>Total Page Visits</span>
+                <span class="stat-value" id="statVisits">0</span>
+            </div>
+            <div class="stat-card">
+                <span>Buy Links Clicked</span>
+                <span class="stat-value" id="statClicks">0</span>
+            </div>
+            <div class="stat-card">
+                <span>Total Active Products</span>
+                <span class="stat-value" id="statProducts">0</span>
+            </div>
+
+            <button type="button" onclick="resetStats()" style="background: #ff4757; color: #fff; margin-top: 20px;">Reset Statistics</button>
+        </div>
+    </div>
+        <script>
         const BIN_ID = "6a6f1327da38895dfeaf29ff";
         const API_KEY = "$2a$10$zigECDZrlUS6mqw0FxAIrOGb5MGmxPkU/ml0.kgX/dTlyHeqvRBv2";
         let cloudProducts = [];
-
-        // Initialize EmailJS (ඔබේ සයිට් එකේ පාවිච්චි කරන Public Key එක මෙහි දමා ඇත)
-        (function(){
-            emailjs.init("YOUR_PUBLIC_KEY"); 
-        })();
 
         function handleLogin(event) {
             event.preventDefault();
@@ -212,11 +229,32 @@
             if(sectionId === 'deleteTab') loadDeleteList();
             if(sectionId === 'editTab') { cancelEditSelection(); loadEditList(); }
             if(sectionId === 'designTab') { fetchCloudData().then(() => populateBannerDropdowns()); }
+            if(sectionId === 'analyticsTab') { loadAnalyticsData(); }
         }
 
         function goHome() {
             document.querySelectorAll('.box:not(#loginBox)').forEach(b => b.classList.add('hidden'));
             document.getElementById('homePage').classList.remove('hidden');
+        }
+
+        // Analytics ඩේටා ලෝඩ් කිරීමේ ෆංක්ෂන් එක
+        async function loadAnalyticsData() {
+            await fetchCloudData();
+            let visits = localStorage.getItem('zoxara_total_visits') || 0;
+            let clicks = localStorage.getItem('zoxara_total_clicks') || 0;
+            
+            document.getElementById('statVisits').innerText = visits;
+            document.getElementById('statClicks').innerText = clicks;
+            document.getElementById('statProducts').innerText = cloudProducts.length;
+        }
+
+        function resetStats() {
+            if(confirm('Are you sure you want to reset all visitor stats?')) {
+                localStorage.setItem('zoxara_total_visits', 0);
+                localStorage.setItem('zoxara_total_clicks', 0);
+                loadAnalyticsData();
+                alert('Stats reset successfully!');
+            }
         }
 
         async function fetchCloudData() {
@@ -293,30 +331,7 @@
             await fetchCloudData();
             cloudProducts.push(newProduct);
             await updateCloudData(cloudProducts, 'Product Successfully Published to Cloud!');
-            
-            // ප්‍රඩක්ට් එකක් ඇඩ් කළ වගට සබ්ස්ක්‍රයිබ් කළ අයට ස්වයංක්‍රීයව ඊමේල් යැවීම
-            notifySubscribersNewProduct(newProduct);
-
             event.target.reset();
-        }
-
-        // සබ්ස්ක්‍රයිබ් කළ අයට මේල් යවන ෆංක්ෂන් එක
-        function notifySubscribersNewProduct(productData) {
-            let subscribers = JSON.parse(localStorage.getItem('zoxara_subscribers')) || [];
-            
-            subscribers.forEach(userEmail => {
-                let templateParams = {
-                    to_email: userEmail,
-                    product_name: productData.title,
-                    product_price: productData.price,
-                    product_image: productData.image,
-                    product_link: productData.link
-                };
-
-                emailjs.send('service_t2crarr', 'template_x4m5f03', templateParams)
-                    .then(response => console.log('Email sent to:', userEmail))
-                    .catch(error => console.error('Email failed:', error));
-            });
         }
 
         async function loadDeleteList() {
