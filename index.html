@@ -10,7 +10,8 @@
         .box { background: #1c1c1e; padding: 20px; border-radius: 14px; box-shadow: 0 8px 20px rgba(0,0,0,0.5); margin-top: 15px; }
         h2 { margin-bottom: 15px; font-size: 18px; text-align: center; color: #fff; }
         label { font-size: 11px; color: #aaa; display: block; margin-top: 10px; }
-        input, select { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #333; background: #2c2c2e; color: #fff; border-radius: 8px; font-size: 12px; box-sizing: border-box; outline: none; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #333; background: #2c2c2e; color: #fff; border-radius: 8px; font-size: 12px; box-sizing: border-box; outline: none; }
+        textarea { resize: vertical; height: 60px; }
         button { width: 100%; background: #fff; color: #000; border: none; padding: 12px; margin-top: 15px; border-radius: 8px; font-weight: 600; cursor: pointer; }
         button:hover { background: #ddd; }
         .hidden { display: none; }
@@ -29,12 +30,14 @@
         .product-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
         .delete-btn { background: #ff4757; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; width: auto; margin-top: 0; }
         .edit-btn { background: #3498db; color: #fff; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; width: auto; margin-top: 0; }
+        
+        .pinterest-section { border-top: 1px dashed #444; margin-top: 15px; padding-top: 10px; }
+        .pinterest-title { font-size: 12px; color: #e60023; font-weight: bold; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Login Screen -->
         <div class="box" id="loginBox">
             <h2>Admin Login</h2>
             <form onsubmit="handleLogin(event)">
@@ -49,7 +52,6 @@
             </form>
         </div>
 
-        <!-- Home Dashboard -->
         <div class="box hidden" id="homePage">
             <h2>Zoxara Admin Dashboard</h2>
             <p style="font-size: 11px; color: #aaa; text-align: center; margin-top: -10px; margin-bottom: 15px;">Cloud Synced Control Panel</p>
@@ -73,9 +75,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- Add Product -->
-        <div class="box hidden" id="addTab">
+                <div class="box hidden" id="addTab">
             <button class="back-home" onclick="goHome()">← Back to Home</button>
             <h2>Add Product</h2>
             <form onsubmit="saveProduct(event)">
@@ -97,11 +97,19 @@
                 <label>Buy Now Link (URL)</label>
                 <input type="url" id="pLink" required placeholder="https://amzn.to/...">
 
-                <button type="submit" id="pubBtn">Publish Product</button>
+                <div class="pinterest-section">
+                    <div class="pinterest-title">📌 Pinterest Pin Details</div>
+                    <label>Pinterest Board ID</label>
+                    <input type="text" id="pPinBoard" placeholder="Enter your Pinterest Board ID">
+
+                    <label>Pinterest Pin Description</label>
+                    <textarea id="pPinDesc" placeholder="Write catchy description & hashtags for Pinterest..."></textarea>
+                </div>
+
+                <button type="submit" id="pubBtn">Publish Product & Pin</button>
             </form>
         </div>
 
-        <!-- Delete Product -->
         <div class="box hidden" id="deleteTab">
             <button class="back-home" onclick="goHome()">← Back to Home</button>
             <h2>Delete Products</h2>
@@ -109,7 +117,6 @@
             <div id="deleteListContainer" style="max-height: 280px; overflow-y: auto;">Loading...</div>
         </div>
 
-        <!-- Edit Product -->
         <div class="box hidden" id="editTab">
             <button class="back-home" onclick="goHome()">← Back to Home</button>
             <h2>Edit Products</h2>
@@ -143,7 +150,6 @@
             </form>
         </div>
 
-        <!-- Site Design -->
         <div class="box hidden" id="designTab">
             <button class="back-home" onclick="goHome()">← Back to Home</button>
             <h2>Site Design & Banners</h2>
@@ -154,38 +160,33 @@
             <h3 style="font-size: 14px; margin-top: 15px; margin-bottom: 5px; color: #fff;">Pin Products to Slider Banners (Up to 5)</h3>
             <p style="font-size: 10px; color: #888; margin-bottom: 10px;">Select products from your inventory to display them automatically on up to 5 banner slides.</p>
 
-            <!-- Banner 1 Select -->
             <label>Pin Product for Banner 1</label>
             <select id="banner1Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 2 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 2</label>
             <select id="banner2Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 3 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 3</label>
             <select id="banner3Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 4 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 4</label>
             <select id="banner4Select"><option value="">-- Select Product --</option></select>
 
-            <!-- Banner 5 Select -->
             <label style="margin-top: 10px;">Pin Product for Banner 5</label>
             <select id="banner5Select"><option value="">-- Select Product --</option></select>
 
             <button type="button" onclick="saveSiteSettings()" style="margin-top: 20px;">Save Pinned Banners</button>
         </div>
     </div>
-        <!-- EmailJS Library Integration -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
     <script>
         const BIN_ID = "6a6f1327da38895dfeaf29ff";
         const API_KEY = "$2a$10$zigECDZrlUS6mqw0FxAIrOGb5MGmxPkU/ml0.kgX/dTlyHeqvRBv2";
+        const PINTEREST_TOKEN = "pina_AMAQKYQYADKIKCAAGAAG2DYEH3LNFHYBQBIQC4AZT4I5O5FCWANTAM5ZFLUUOM7CXEN6DU3DIWMJWUCV7PKWHRJ55QKPNPQA";
+        
         let cloudProducts = [];
 
-        // Initialize EmailJS (ඔබේ සයිට් එකේ පාවිච්චි කරන Public Key එක මෙහි දමා ඇත)
         (function(){
             emailjs.init("YOUR_PUBLIC_KEY"); 
         })();
@@ -294,16 +295,51 @@
             cloudProducts.push(newProduct);
             await updateCloudData(cloudProducts, 'Product Successfully Published to Cloud!');
             
-            // ප්‍රඩක්ට් එකක් ඇඩ් කළ වගට සබ්ස්ක්‍රයිබ් කළ අයට ස්වයංක්‍රීයව ඊමේල් යැවීම
-            notifySubscribersNewProduct(newProduct);
+            let pinBoard = document.getElementById('pPinBoard').value.trim();
+            let pinDesc = document.getElementById('pPinDesc').value.trim();
+            if (pinBoard && pinDesc) {
+                publishToPinterest(newProduct, pinBoard, pinDesc);
+            }
 
+            notifySubscribersNewProduct(newProduct);
             event.target.reset();
         }
 
-        // සබ්ස්ක්‍රයිබ් කළ අයට මේල් යවන ෆංක්ෂන් එක
+        async function publishToPinterest(prod, boardId, description) {
+            try {
+                let pinData = {
+                    link: prod.link,
+                    title: prod.title,
+                    description: description,
+                    board_id: boardId,
+                    media_source: {
+                        source_type: "image_url",
+                        url: prod.image
+                    }
+                };
+
+                let response = await fetch("https://api.pinterest.com/v5/pins", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${PINTEREST_TOKEN}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(pinData)
+                });
+
+                if (response.ok) {
+                    console.log("Pinterest Pin published successfully!");
+                } else {
+                    let errData = await response.json();
+                    console.error("Pinterest Error:", errData);
+                }
+            } catch (e) {
+                console.error("Pinterest network error:", e);
+            }
+        }
+
         function notifySubscribersNewProduct(productData) {
             let subscribers = JSON.parse(localStorage.getItem('zoxara_subscribers')) || [];
-            
             subscribers.forEach(userEmail => {
                 let templateParams = {
                     to_email: userEmail,
